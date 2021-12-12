@@ -3,9 +3,10 @@
 namespace App\Controller;
 
 use App\Entity\BlogPost;
-use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
 use Symfony\Component\Routing\Annotation\Route;
 
 /**
@@ -29,7 +30,7 @@ class BlogController extends AbstractController
  * @Route("/post/{page}" , name="blog_list" , defaults={"page":5}, requirements={"id"="\d+"})
  */
    
-    public function listBlog($page = 1, Request $request){
+    /*public function listBlog($page = 1, Request $request){
        $limit = $request->get('limit',10);
        $repository = $this->getDoctrine()->getRepository(BlogPost::class);
        $items = $repository->findAll();
@@ -42,24 +43,29 @@ class BlogController extends AbstractController
               },$items)
           ]
         );
-    }
+    }*/
 
     /**
      *@Route("/post/{id}", name="blog_by_id" , requirements={"id"="\d+"})
+     *@ParamConverter("post" , class="App:BlogPost")
      */
-    public function post($id){
+    public function post($post){
+
+        //$this->getDoctrine()->getRepository(BlogPost::class)->find($id)
         return $this->json(
-            $this->getDoctrine()->getRepository(BlogPost::class)->find($id)
+        $post
         );
     }
 
      /**
      *@Route("/post/{slug}", name="blog_by_slug")
+     *@ParamConverter("post" , class="App:BlogPost", options={"mapping" : {"slug":"slug"}})
      */
-    public function postBySlug($slug){
+    public function postBySlug($post){
+        // $this->getDoctrine()->getRepository(BlogPost::class)->findOneBy(['slug' => $slug])
         return $this->json(
-            self::POSTS[array_search($slug, array_column(self::POSTS, 'slug'))]
-            );
+            $post
+        );
     }
 
     /**
