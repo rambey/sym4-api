@@ -7,6 +7,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Annotation\Route;
 
 /**
@@ -30,7 +31,7 @@ class BlogController extends AbstractController
  * @Route("/post/{page}" , name="blog_list" , defaults={"page":5}, requirements={"id"="\d+"})
  */
    
-    /*public function listBlog($page = 1, Request $request){
+    public function listBlog($page = 1, Request $request){
        $limit = $request->get('limit',10);
        $repository = $this->getDoctrine()->getRepository(BlogPost::class);
        $items = $repository->findAll();
@@ -43,10 +44,10 @@ class BlogController extends AbstractController
               },$items)
           ]
         );
-    }*/
+    }
 
     /**
-     *@Route("/post/{id}", name="blog_by_id" , requirements={"id"="\d+"})
+     *@Route("/post/{id}", name="blog_by_id" , requirements={"id"="\d+"} , methods={"GET"})
      *@ParamConverter("post" , class="App:BlogPost")
      */
     public function post($post){
@@ -58,7 +59,7 @@ class BlogController extends AbstractController
     }
 
      /**
-     *@Route("/post/{slug}", name="blog_by_slug")
+     *@Route("/post/{slug}", name="blog_by_slug" ,methods={"GET"})
      *@ParamConverter("post" , class="App:BlogPost", options={"mapping" : {"slug":"slug"}})
      */
     public function postBySlug($post){
@@ -83,5 +84,15 @@ class BlogController extends AbstractController
         $em->flush();
         return $this->json($blogPost);
 
+    }
+
+     /**
+     *@Route("/post/delete/{id}", name="blog_delete" , methods={"DELETE"})
+     */
+    public function delete(BlogPost $post){
+        $em = $this->getDoctrine()->getManager();
+        $em->remove($post);
+        $em->flush();
+        return new JsonResponse(null,Response::HTTP_NO_CONTENT);
     }
 }
