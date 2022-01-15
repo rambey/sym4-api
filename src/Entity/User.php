@@ -8,10 +8,21 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\UserInterface;
+use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
+
 
 /**
- * @ApiResource()
+ * @ApiResource(
+ *  itemOperations={"get"},
+ *  collectionOperations={"post","get"},
+ *  normalizationContext={
+ *     "groups"={"read"}
+ * }
+ * )
  * @ORM\Entity(repositoryClass=UserRepository::class)
+ * @UniqueEntity(fields={"username", "email"})
  */
 
 class User implements UserInterface
@@ -20,36 +31,67 @@ class User implements UserInterface
      * @ORM\Id
      * @ORM\GeneratedValue
      * @ORM\Column(type="integer")
+     * @Groups({"read"})
      */
     private $id;
 
     /**
      * @ORM\Column(type="string", length=255)
+     * @Groups({"read"})
+     * @Assert\NotBlank
      */
     private $username;
 
     /**
      * @ORM\Column(type="string", length=255)
+     * @Assert\NotBlank
+     * @Assert\Regex(
+     *   pattern="/(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9]).{7,}/",
+     *   message="Password must be at least seven characters and contain at least one digit , one upper case letter and on lower case letter"
+     * ) 
      */
     private $password;
 
     /**
+     * @Assert\NotBlank
+     * @Assert\Expression(
+     *  "this.getPassword() === this.getRetypedPassord()",
+     *  message="Password doe not match"
+     * )
+     */
+    private $retypedPassord;
+
+    /**
      * @ORM\Column(type="string", length=255)
+     *  @Groups({"read"})
+     *  @Assert\NotBlank
+     *  @Assert\Length(
+     *      min = 6,
+     *      max = 255,
+     *      minMessage = "Your first name must be at least {{ limit }} characters long",
+     *      maxMessage = "Your first name cannot be longer than {{ limit }} characters"
+     * )
      */
     private $fullname;
 
     /**
      * @ORM\Column(type="string", length=255)
+     * @Assert\NotBlank
+     * @Assert\Email(
+     *     message = "The email '{{ value }}' is not a valid email."
+     * )
      */
     private $email;
 
     /**
      * @ORM\OneToMany(targetEntity=BlogPost::class, mappedBy="author")
+     * @Groups({"read"})
      */
     private $posts;
 
     /**
-     * @ORM\OneToMany(targetEntity=Comment::class, mappedBy="author", orphanRemoval=true)
+     * @ORM\OneToMany(targetEntity=Comment::class, mappedBy="author")
+     * @Groups({"read"})
      */
     private $comments;
 
@@ -84,6 +126,18 @@ class User implements UserInterface
     public function setPassword(string $password): self
     {
         $this->password = $password;
+
+        return $this;
+    }
+
+    public function getRetypedPassord(): ?string
+    {
+        return $this->retypedPassord;
+    }
+
+    public function setRetypedPassord(string $retypedPassord): self
+    {
+        $this->retypedPassord = $retypedPassord;
 
         return $this;
     }

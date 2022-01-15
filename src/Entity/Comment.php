@@ -4,8 +4,11 @@ namespace App\Entity;
 
 use App\Repository\CommentRepository;
 use Doctrine\ORM\Mapping as ORM;
-
+use ApiPlatform\Core\Annotation\ApiResource;
 /**
+ * @ApiResource(
+ *   itemOperations={"get"},
+ *   collectionOperations={"get"}))
  * @ORM\Entity(repositoryClass=CommentRepository::class)
  */
 class Comment
@@ -28,10 +31,17 @@ class Comment
     private $published;
 
     /**
-     * @ORM\ManyToOne(targetEntity=User::class, inversedBy="comments")
+     * @ORM\ManyToOne(targetEntity=User::class, inversedBy="comments",cascade={"persist"})
      * @ORM\JoinColumn(nullable=false)
      */
     private $author;
+
+
+    /**
+     * @ORM\ManyToOne(targetEntity=BlogPost::class, inversedBy="comments",cascade={"persist"})
+     * @ORM\JoinColumn(nullable=false)
+     */
+    private $blogPost;
 
     public function getId(): ?int
     {
@@ -72,5 +82,14 @@ class Comment
         $this->author = $author;
 
         return $this;
+    }
+
+    public function getBlogPost():BlogPost{
+        return $this->blogPost;
+    }
+
+    public function setBlogPost( BlogPost $blogPost):self{
+         $this->blogPost = $blogPost;
+         return $this;
     }
 }
