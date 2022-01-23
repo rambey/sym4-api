@@ -26,6 +26,10 @@ class BlogController extends AbstractController
             'path' => 'src/Controller/BlogController.php',
         ]);
     } 
+
+    
+
+
     
 /**
  * @Route("/post/{page}" , name="blog_list" , defaults={"page":5}, requirements={"id"="\d+"})
